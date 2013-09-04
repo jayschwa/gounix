@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"os/signal"
 	"time"
 )
 
@@ -26,8 +27,13 @@ func main() {
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
 
+		signals := make(chan os.Signal)
+		signal.Notify(signals)
+
 		start := time.Now()
 		err := cmd.Run()
+
+		signal.Stop(signals)
 
 		if process := cmd.ProcessState; process != nil {
 			real = time.Since(start)
