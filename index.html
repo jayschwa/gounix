@@ -3,5 +3,23 @@
 <head>
 	<title>gounix.org</title>
 	<meta name="go-import" content="gounix.org git https://github.com/jayschwa/gounix">
+	<script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+	<script>
+	$(function() {
+		// GitHub uses custom media types:
+		// https://developer.github.com/v3/media/
+		$.ajaxSetup({
+			accepts: {
+				html: "application/vnd.github.html",
+				text: "application/vnd.github.text"}});
+		// Load project README
+		$("#readme").load(
+			"https://api.github.com/repos/jayschwa/gounix/readme "+
+			"article.markdown-body > *"); // strip container(s)
+	});
+	</script>
 </head>
+<body>
+	<article class='readme'>Loading README...</article>
+</body>
 </html>
