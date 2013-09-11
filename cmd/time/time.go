@@ -9,50 +9,54 @@ import (
 	"time"
 )
 
+import "gounix.org/cmd"
+
 type ExitStatus interface {
 	ExitStatus() int
 }
 
 func main() {
+	cmd.Init("time")
+	defer cmd.Exit()
+
 	var real, user, sys time.Duration
-	var status int
 
 	posix_fmt := flag.Bool("p", false, "use POSIX formatting")
 	flag.Parse()
 	args := flag.Args()
 
 	if len(args) > 0 {
-		cmd := exec.Command(args[0], args[1:len(args)]...)
-		cmd.Stdin = os.Stdin
-		cmd.Stdout = os.Stdout
-		cmd.Stderr = os.Stderr
+		racer := exec.Command(args[0], args[1:len(args)]...)
+		racer.Stdin = os.Stdin
+		racer.Stdout = os.Stdout
+		racer.Stderr = os.Stderr
 
 		signals := make(chan os.Signal)
 		signal.Notify(signals)
 
 		start := time.Now()
-		err := cmd.Run()
+		err := racer.Run()
 
 		signal.Stop(signals)
 
-		if process := cmd.ProcessState; process != nil {
+		if process := racer.ProcessState; process != nil {
 			real = time.Since(start)
 			user = process.UserTime()
 			sys = process.SystemTime()
 
 			if es, ok := process.Sys().(ExitStatus); ok {
-				status = es.ExitStatus()
+				cmd.ExitStatus = es.ExitStatus()
 			} else if process.Success() {
-				status = 0
+				cmd.ExitStatus = 0
 			} else {
-				status = 1
+				cmd.ExitStatus = 1
 			}
 		} else if err != nil {
-			fmt.Fprintln(os.Stderr, err)
+			cmd.Errorln(err)
 			if err, ok := err.(*exec.Error); ok && err.Err == exec.ErrNotFound {
-				status = 127
+				cmd.ExitStatus = 127
 			} else {
-				status = 126
+				cmd.ExitStatus = 126
 			}
 		}
 	}
@@ -61,5 +65,4 @@ func main() {
 	} else {
 		fmt.Fprintf(os.Stderr, "\nreal\t%v\nuser\t%v\nsys\t%v\n", real, user, sys)
 	}
-	os.Exit(status)
 }

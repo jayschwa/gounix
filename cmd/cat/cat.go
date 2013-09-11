@@ -3,13 +3,15 @@ package main
 import (
 	"flag"
 	"io"
-	"log"
 	"os"
 )
 
+import "gounix.org/cmd"
+
 func main() {
-	log.SetPrefix("cat: ")
-	log.SetFlags(0)
+	cmd.Init("cat")
+	defer cmd.Exit()
+
 	flag.Bool("u", true, "unbuffered reads")
 	flag.Parse()
 	files := flag.Args()
@@ -19,7 +21,7 @@ func main() {
 	for _, file := range files {
 		err := cat(file)
 		if err != nil {
-			log.Println(err)
+			cmd.Errorln(err)
 		}
 	}
 }
