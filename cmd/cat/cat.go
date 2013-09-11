@@ -24,10 +24,12 @@ func main() {
 	}
 }
 
-func cat(name string) (err error) {
-	src := os.Stdin
-	if name != "-" {
-		src, err = os.Open(name)
+func cat(filename string) (err error) {
+	var src *os.File
+	if filename == "-" {
+		src = os.Stdin
+	} else {
+		src, err = os.Open(filename)
 		if err != nil {
 			return err
 		}
