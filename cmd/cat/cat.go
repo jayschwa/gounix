@@ -7,17 +7,17 @@ import (
 	"os"
 )
 
-func catFile(name string) (err error) {
-	input := os.Stdin
+func cat(name string) (err error) {
+	src := os.Stdin
 	if name != "-" {
-		input, err = os.Open(name)
+		src, err = os.Open(name)
 		if err != nil {
-			return
+			return err
 		}
-		defer input.Close()
+		defer src.Close()
 	}
-	_, err = io.Copy(os.Stdout, input)
-	return
+	_, err = io.Copy(os.Stdout, src)
+	return err
 }
 
 func main() {
@@ -29,8 +29,8 @@ func main() {
 	if len(files) <= 0 {
 		files = []string{"-"}
 	}
-	for _, f := range files {
-		err := catFile(f)
+	for _, file := range files {
+		err := cat(file)
 		if err != nil {
 			log.Println(err)
 		}
